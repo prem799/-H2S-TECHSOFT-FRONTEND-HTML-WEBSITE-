@@ -8,25 +8,34 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout code from GitHub
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 2. Install SSH key (to access EC2)
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
         with:
-          key: ${{ secrets.EC2_SSH_KEY }}  # Must be base64-encoded
+          key: ${{ secrets.EC2_SSH_KEY }}
           known_hosts: "optional"
-          name: id_rsa                    # Optional: Name the key file
-          if_key_exists: fail             # Fail if key already exists
+          name: id_rsa
+          if_key_exists: fail
 
-      # 3. Copy files to EC2 via SCP
-      - name: Upload Files to EC2
+      - name: Test SSH Connection
         run: |
-          scp -o StrictHostKeyChecking=no -r ./* ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/html/
+          ssh -o StrictHostKeyChecking=no \
+              -i ~/.ssh/id_rsa \
+              ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+              "echo 'SSH connection successful!'"
 
-      # 4. Restart Nginx (to apply changes)
+      - name: Deploy Files
+        run: |
+          scp -o StrictHostKeyChecking=no \
+              -i ~/.ssh/id_rsa \
+              -r ./* \
+              ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/html/
+
       - name: Restart Nginx
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "sudo systemctl restart nginx"
+          ssh -o StrictHostKeyChecking=no \
+              -i ~/.ssh/id_rsa \
+              ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+              "sudo systemctl restart nginx"
