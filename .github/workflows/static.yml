@@ -23,7 +23,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no \
               -i ~/.ssh/id_rsa \
-              ${{ secrets.Amazon Linux }}@${{ secrets.34.209.152.220 }} \
+              ${{ secrets.ec2-user}}@${{ secrets.34.209.152.220 }} \
               "echo 'SSH connection successful!'"
 
       - name: Deploy Files
@@ -31,11 +31,11 @@ jobs:
           scp -o StrictHostKeyChecking=no \
               -i ~/.ssh/id_rsa \
               -r ./* \
-              ${{ secrets.Amazon Linux}}@${{ secrets.34.209.152.220 }}:/var/www/html/
+              ${{ secrets.ec2-user}}@${{ secrets.34.209.152.220 }}:/var/www/html/
 
       - name: Restart Nginx
         run: |
           ssh -o StrictHostKeyChecking=no \
               -i ~/.ssh/id_rsa \
-              ${{ secrets.Amazon Linux }}@${{ secrets.34.209.152.220 }} \
+              ${{ secrets.ec2-user }}@${{ secrets.34.209.152.220 }} \
               "sudo systemctl restart nginx"
