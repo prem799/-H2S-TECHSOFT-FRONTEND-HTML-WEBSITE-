@@ -17,20 +17,13 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2 
-      - name: Install SSH Key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.LINUX }}
-          known_hosts: "optional"
-          name: id_rsa
-          if_key_exists: fail
-
-      - name: Test SSH Connection
+     
+      - name: Setup SSH key
         run: |
-          ssh -o StrictHostKeyChecking=no \
-              -i ~/.ssh/id_rsa \
-              ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
-              "echo 'SSH connection successful!'"
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy Files
         run: |
