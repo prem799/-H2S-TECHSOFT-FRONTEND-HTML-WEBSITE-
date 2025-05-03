@@ -33,11 +33,27 @@ jobs:
 
       - name: Deploy Files
         run: |
+         # Create directory with sudo (if needed)
+         ssh -o StrictHostKeyChecking=no \
+         -i ~/.ssh/id_rsa \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+          "sudo mkdir -p /var/www/html && sudo chown -R $USER:$USER /var/www/html && sudo chmod -R 755 /var/www/html"
+    
+          # Verify directory exists
+          ssh -i ~/.ssh/id_rsa \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+          "ls -la /var/www"  # This should show the html directory
+    
+          # Deploy files
           scp -o StrictHostKeyChecking=no \
-              -i ~/.ssh/id_rsa \
-              -r ./* \
-              ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/html/
-
+          -i ~/.ssh/id_rsa \
+          -r ./* \
+           ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/html/
+    
+           # Verify deployment
+           ssh -i ~/.ssh/id_rsa \
+           ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+           "ls -la /var/www/html"  # Should show your files
       - name: Restart Nginx
         run: |
           ssh -o StrictHostKeyChecking=no \
