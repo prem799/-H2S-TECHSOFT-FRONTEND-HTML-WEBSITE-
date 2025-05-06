@@ -1,41 +1,17 @@
-name: Deploy HTML to EC2
-
+name: Create Directory on EC2
 on:
-  push:
-    branches: [main]
-
+  workflow_dispatch:
 jobs:
-  deploy:
-    runs-on: self-hosted
+  create-dir:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Deploy Files
-        run: |
-         # Create directory with sudo (if needed)
-         ssh -o StrictHostKeyChecking=no \
-         -i ~/.ssh/id_rsa \
-          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
-          "sudo mkdir -p /var/www/html && sudo chown -R $USER:$USER /var/www/html && sudo chmod -R 755 /var/www/html"
-
-              # Deploy files
-          scp -o StrictHostKeyChecking=no \
-          -i ~/.ssh/id_rsa \
-          -r ./* \
-           ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/html/
-  
-      - name: Restart Nginx
-        run: |
-          ssh -o StrictHostKeyChecking=no \
-              -i ~/.ssh/id_rsa \
-              ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
-              "sudo systemctl restart nginx"
+    - name: Checkout code
+      uses: actions/checkout@v3
+    - name: Create directory on EC2 instance
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          mkdir -p ~/abcd
