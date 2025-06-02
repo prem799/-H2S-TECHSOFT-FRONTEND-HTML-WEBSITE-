@@ -1,0 +1,27 @@
+from flask import Flask, render_template, request
+
+app = Flask(__name__)
+
+# Store employee records temporarily (in memory)
+employee_records = []
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/submit', methods=['POST'])
+def submit():
+    emp_details = {
+        "name": request.form['empName'],
+        "id": request.form['empId'],
+        "department": request.form['department'],
+        "designation": request.form['designation'],
+        "email": request.form['email'],
+        "join_date": request.form['joinDate']
+    }
+    employee_records.append(emp_details)
+
+    return render_template('success.html', emp=emp_details)
+
+if __name__ == '__main__':
+    app.run(debug=True)
